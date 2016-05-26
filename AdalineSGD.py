@@ -23,7 +23,6 @@ class AdalineSGD(object):
 	random_state : int (default: None)
 		Set random state for shuffling and initializing
 		the weights.
-	
 	"""
 	def __init__(self, eta=0.01, n_iter = 50, shuffle=True, random_state=None):
 		self.eta = eta
