@@ -27,6 +27,8 @@ import random, string
 from Captcha.Base import randomIdentifier
 from Captcha.Visual import Text, Backgrounds, Distortions, ImageCaptcha
 
+import numpy as np
+
 IDEN_LENGTH = 32
 SOL_LENGTH = 6
 
@@ -36,7 +38,7 @@ class RandCaptcha(ImageCaptcha):
 
     def getLayers(self, solution="blah"):
         self.addSolution(solution)
-        return ((Backgrounds.Grid(size=8, foreground="white"),
+        return ((Backgrounds.Grid(size=8, foreground="black"), #foreground="white" for original code
                  Distortions.SineWarp(amplitudeRange=(5,9))),
                 (Text.TextLayer(solution,
                                textColor = 'white',
@@ -50,10 +52,27 @@ def get_image():
     solution = make_solution()
     return RandCaptcha(solution=solution).render(), solution
 
+def add_neighbor(f, Y,col,row):
+	newY = np.copy(Y)
+	for i in range(-1,0,1):
+		for j in range(-1,0,1):
+			if (f.getpixel((col+i,row+j))[0] != 0) and Y[col+i][row+j] == 0.0:
+				add_neighbor(f, newY,col,row)
+	return newY
+
 def main():
 	image,solution = get_image()
 	f = "%s.png"%solution
 	image.save(f, "PNG")
+	
+	Y = np.zeros(f.size)
+	regions = 0
+	for col in range(1,f.size[0]-1):
+		for row in range(1,f.size[1]-1):
+			if (f.getpixel((col,row))[0] != 0) and Y[col][row] == 0.0:
+				Y = add_neighbor(f, Y,col,row)
+			
+	
 	return 0
     
 if __name__ == "__main__":
