@@ -24,13 +24,8 @@ from __future__ import absolute_import
 
 import random, string
 
-#from pylons import app_globals as g
-
 from Captcha.Base import randomIdentifier
 from Captcha.Visual import Text, Backgrounds, Distortions, ImageCaptcha
-
-#from r2.lib.cache import make_key
-from hashlib import md5
 
 IDEN_LENGTH = 32
 SOL_LENGTH = 6
@@ -48,63 +43,15 @@ class RandCaptcha(ImageCaptcha):
                                fontFactory = self.fontFactory),
                  Distortions.SineWarp()))
 
-def get_iden():
-    return randomIdentifier(length=IDEN_LENGTH)
-
 def make_solution():
     return randomIdentifier(alphabet=string.ascii_letters, length = SOL_LENGTH).upper()
 
-def get_image(iden):
-    key = make_key(iden)
+def get_image():
     solution = make_solution()
     return RandCaptcha(solution=solution).render(), solution
 
-def valid_solution(iden, solution):
-    key = make_key(iden)
-
-    if (not iden
-        or not solution
-        or len(iden) != IDEN_LENGTH
-        or len(solution) != SOL_LENGTH
-        or solution.upper() != g.cache.get(key)):
-        solution = make_solution()
-        g.cache.set(key, solution, time = 300)
-        return False
-    else:
-        g.cache.delete(key)
-        return True
-
-def make_key(iden, *a, **kw):
-    """
-    A helper function for making memcached-usable cache keys out of
-    arbitrary arguments. Hashes the arguments but leaves the `iden'
-    human-readable
-    """
-    h = md5()
-    iden = _make_hashable(iden)
-    h.update(iden)
-    h.update(_make_hashable(a))
-    h.update(_make_hashable(kw))
-
-    return '%s(%s)' % (iden, h.hexdigest())
-
-def _make_hashable(s):
-    if isinstance(s, str):
-        return s
-    elif isinstance(s, unicode):
-        return s.encode('utf-8')
-    elif isinstance(s, (tuple, list)):
-        return ','.join(_make_hashable(x) for x in s)
-    elif isinstance(s, dict):
-        return ','.join('%s:%s' % (_make_hashable(k), _make_hashable(v))
-                        for (k, v) in sorted(s.iteritems()))
-    else:
-        return str(s)
-
 def main():
-	iden = 'test'
-	image,solution = get_image(iden)
-	#f = StringIO.StringIO()
+	image,solution = get_image()
 	f = "%s.png"%solution
 	image.save(f, "PNG")
 	return 0
