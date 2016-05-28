@@ -67,10 +67,7 @@ def main():
 	
 	Y = np.zeros(f.size)
 	regions = 0
-	for col in range(1,f.size[0]-1):
-		for row in range(1,f.size[1]-1):
-			if (f.getpixel((col,row))[0] != 0) and Y[col][row] == 0.0:
-				Y = add_neighbor(f, Y,col,row)
+
 			
 	
 	return 0
